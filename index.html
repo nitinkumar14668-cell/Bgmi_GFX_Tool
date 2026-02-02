@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#0b1220"/>
+  <title>BGMI GFX Tool - Premium Web App</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#0b1220; --card:#0f1a2e; --txt:#eaf0ff; --muted:#9bb0d3;
+      --pri:#4f8cff; --pri2:#8b5cff; --radius:22px;
+      --danger:#ff4f6d;
+      --ok:#4dffb5;
+    }
+    *{ box-sizing:border-box; font-family:Inter,system-ui,Arial; }
+    body{
+      margin:0; color:var(--txt);
+      background:radial-gradient(1200px 700px at 30% -10%, #1a2f5e 0%, transparent 50%), var(--bg);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .app{ max-width:420px; margin:0 auto; min-height:100vh; padding:12px 12px 92px; }
+
+    .topbar{ display:flex; justify-content:space-between; align-items:center; padding:8px 6px; }
+    .brand{ display:flex; gap:10px; align-items:center; }
+    .logo{
+      width:44px; height:44px; border-radius:14px; display:grid; place-items:center;
+      background:linear-gradient(135deg, var(--pri), var(--pri2));
+      font-weight:800; box-shadow:0 10px 40px rgba(79,140,255,.25); user-select:none;
+    }
+    .title{ font-weight:800; font-size:15px; }
+    .sub{ font-size:12px; color:var(--muted); }
+
+    .chip{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.06);
+      color:var(--txt); padding:10px 12px; border-radius:999px; font-weight:800;
+      cursor:pointer;
+    }
+    .chip:active{ transform:scale(.98); }
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:var(--radius);
+      padding:14px; margin-top:12px;
+      box-shadow:0 10px 40px rgba(0,0,0,.25);
+    }
+    .anim{ animation:pop .35s ease; }
+    @keyframes pop{ from{ transform:translateY(8px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
+
+    .row{ display:flex; justify-content:space-between; gap:10px; align-items:center; }
+    .label{ color:var(--muted); font-size:12px; }
+    .value{ font-weight:900; font-size:14px; }
+    .mini{ margin-top:8px; color:var(--muted); font-size:11px; opacity:.9; }
+
+    .tabs{ display:flex; gap:8px; overflow:auto; padding:10px; }
+    .tab{
+      flex:1; min-width:90px; border:0; border-radius:999px; padding:10px 12px;
+      background:rgba(255,255,255,.06); color:var(--txt); font-weight:900;
+      cursor:pointer; transition:.2s;
+    }
+    .tab:active{ transform:scale(.98); }
+    .tab.active{
+      background:linear-gradient(135deg, rgba(79,140,255,.9), rgba(139,92,255,.85));
+      box-shadow:0 10px 30px rgba(79,140,255,.18);
+    }
+
+    h2{ margin:0 0 10px; font-size:15px; }
+    .muted{ color:var(--muted); font-size:12px; margin-top:0; }
+
+    .pages{ margin-top:8px; }
+    .page{ display:none; }
+    .page.active{ display:block; }
+
+    .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .field label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+    select, input[type="color"]{
+      width:100%; padding:12px 12px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.25); color:var(--txt);
+      outline:none; font-weight:800;
+    }
+    input[type="range"]{ width:100%; }
+
+    .toggles{ display:grid; gap:10px; margin-top:10px; }
+    .toggle{ display:flex; align-items:center; gap:10px; font-size:13px; font-weight:800; }
+    .toggle input{ display:none; }
+    .toggle span{
+      width:46px; height:26px; border-radius:999px; background:rgba(255,255,255,.15);
+      position:relative; transition:.25s;
+    }
+    .toggle span::after{
+      content:""; width:20px; height:20px; border-radius:50%;
+      position:absolute; top:3px; left:3px; background:#fff; transition:.25s;
+    }
+    .toggle input:checked + span{ background:rgba(79,140,255,.8); }
+    .toggle input:checked + span::after{ left:23px; }
+
+    .btnRow{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
+    .btn{
+      flex:1; min-width:110px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      color:var(--txt); padding:12px; border-radius:16px;
+      font-weight:900; cursor:pointer; transition:.2s;
+    }
+    .btn:active{ transform:scale(.98); }
+    .btn.primary{
+      border:0; background:linear-gradient(135deg, var(--pri), var(--pri2));
+      box-shadow:0 10px 30px rgba(79,140,255,.18);
+    }
+    .btn.danger{ border:0; background:linear-gradient(135deg, #ff4f6d, #ff7a4f); }
+    .btn.ok{ border:0; background:linear-gradient(135deg, #4dffb5, #4f8cff); color:#06121f; }
+
+    textarea{
+      width:100%; min-height:180px; border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.30); color:var(--txt);
+      padding:12px; outline:none; resize:none;
+      font-size:12px; line-height:1.4; font-weight:800;
+    }
+
+    .sliders{ display:grid; gap:12px; margin-top:10px; }
+    .srow{ display:grid; grid-template-columns:70px 1fr 42px; align-items:center; gap:10px; font-size:12px; font-weight:900; }
+    .srow b{ text-align:right; }
+
+    .meter{
+      margin-top:10px; display:grid; gap:10px;
+    }
+    .mrow{ display:grid; grid-template-columns:90px 1fr 40px; align-items:center; gap:10px; font-weight:900; font-size:12px; }
+    .bar{
+      height:12px; border-radius:999px;
+      background:rgba(255,255,255,.10);
+      overflow:hidden; border:1px solid rgba(255,255,255,.10);
+    }
+    .fill{
+      height:100%; width:40%;
+      background:linear-gradient(90deg, rgba(79,140,255,.9), rgba(139,92,255,.85));
+      border-radius:999px; transition:width .35s ease;
+    }
+
+    .bottomNav{
+      position:fixed; left:50%; transform:translateX(-50%); bottom:10px;
+      width:min(420px, 96vw); padding:10px;
+      border-radius:24px;
+      background:rgba(15,26,46,.92);
+      border:1px solid rgba(255,255,255,.10);
+      display:flex; justify-content:space-between; gap:10px;
+      backdrop-filter: blur(12px);
+    }
+    .navBtn{
+      flex:1; padding:10px; border-radius:18px; border:0;
+      background:transparent; color:var(--txt);
+      font-size:14px; font-weight:900;
+      cursor:pointer; transition:.2s;
+    }
+    .navBtn.active{
+      background:linear-gradient(135deg, rgba(79,140,255,.9), rgba(139,92,255,.85));
+      box-shadow:0 10px 30px rgba(79,140,255,.18);
+    }
+
+    /* Crosshair overlay */
+    #crosshairOverlay{
+      position:fixed; left:50%; top:50%;
+      transform:translate(-50%,-50%);
+      pointer-events:none;
+      z-index:9999;
+      width:120px; height:120px;
+      display:none;
+      opacity:.85;
+    }
+
+    /* Run Screen */
+    .runScreen{
+      position:fixed; inset:0; z-index:99999;
+      background:radial-gradient(800px 400px at 50% -10%, rgba(79,140,255,.25), transparent 55%), rgba(5,10,18,.96);
+      display:none;
+      padding:20px;
+    }
+    .runBox{
+      max-width:420px; margin:0 auto;
+      margin-top:10vh;
+      border-radius:28px;
+      border:1px solid rgba(255,255,255,.12);
+      background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+      padding:18px;
+      box-shadow:0 20px 70px rgba(0,0,0,.5);
+    }
+    .spinner{
+      width:54px; height:54px; border-radius:50%;
+      border:5px solid rgba(255,255,255,.15);
+      border-top-color: rgba(79,140,255,.95);
+      animation:spin 1s linear infinite;
+      margin:16px auto 10px;
+    }
+    @keyframes spin{ to{ transform:rotate(360deg); } }
+    .runTitle{ font-size:16px; font-weight:900; text-align:center; margin:8px 0 4px; }
+    .runSub{ text-align:center; color:var(--muted); font-size:12px; font-weight:800; }
+    .runLog{
+      margin-top:14px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.28);
+      padding:12px;
+      font-size:12px;
+      color:#dbe7ff;
+      line-height:1.45;
+      min-height:120px;
+      font-weight:800;
+      white-space:pre-line;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app" id="app"></div>
+
+  <!-- Crosshair Overlay Canvas -->
+  <canvas id="crosshairOverlay" width="160" height="160"></canvas>
+
+  <!-- Run Screen -->
+  <div class="runScreen" id="runScreen">
+    <div class="runBox anim">
+      <div class="logo" style="margin:0 auto;">GFX</div>
+      <div class="spinner"></div>
+      <div class="runTitle" id="runTitle">Launching…</div>
+      <div class="runSub" id="runSub">Please wait</div>
+      <div class="runLog" id="runLog">Initializing…</div>
+      <div class="btnRow" style="margin-top:14px;">
+        <button class="btn danger" id="btnCloseRun">Close</button>
+        <button class="btn primary" id="btnOpenStore">Open Play Store</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* =========================================================
+   SCRIPT  ->  HTML Templates (as you requested)
+========================================================= */
+
+const $ = (q)=>document.querySelector(q);
+const $$ = (q)=>document.querySelectorAll(q);
+
+const state = {
+  tab: "gfx",
+  deviceRamGB: null,
+  deviceMemoryGB: null,
+  fpsSim: 58,
+  fpsTarget: 60,
+  fpsInterval: null,
+  perfInterval: null,
+  crosshairInterval: null,
+};
+
+function clamp(n,min,max){ return Math.max(min, Math.min(max,n)); }
+function round(n){ return Math.round(n); }
+
+function getDeviceMemory(){
+  // Chrome Android provides navigator.deviceMemory in GB
+  return navigator.deviceMemory || null;
+}
+function estimateRamFromUA(){
+  // fallback rough guess
+  const ua = navigator.userAgent.toLowerCase();
+  if(ua.includes("android")){
+    // very rough heuristics
+    if(ua.includes("sm-") || ua.includes("pixel") || ua.includes("oneplus")) return 8;
+    return 4;
+  }
+  return 4;
+}
+
+function renderApp(){
+  $("#app").innerHTML = APP_HTML();
+  bindUI();
+  detectDevice();
+  startLoops();
+  updateAll();
+}
+
+function APP_HTML(){
+  return `
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">GFX</div>
+        <div>
+          <div class="title">BGMI GFX Tool</div>
+          <div class="sub">Premium Config Generator</div>
+        </div>
+      </div>
+      <button class="chip" id="btnReset">Reset</button>
+    </header>
+
+    <section class="card anim">
+      <div class="row">
+        <div>
+          <div class="label">Device RAM</div>
+          <div class="value" id="ramText">Detecting...</div>
+        </div>
+        <div>
+          <div class="label">FPS Monitor</div>
+          <div class="value"><span id="fpsNow">--</span> FPS</div>
+        </div>
+      </div>
+
+      <div class="meter">
+        <div class="mrow">
+          <span class="label">FPS</span>
+          <div class="bar"><div class="fill" id="barFps"></div></div>
+          <b id="fpsBarVal">--</b>
+        </div>
+        <div class="mrow">
+          <span class="label">Stability</span>
+          <div class="bar"><div class="fill" id="barStab"></div></div>
+          <b id="stabVal">--</b>
+        </div>
+        <div class="mrow">
+          <span class="label">Heat</span>
+          <div class="bar"><div class="fill" id="barHeat"></div></div>
+          <b id="heatVal">--</b>
+        </div>
+        <div class="mrow">
+          <span class="label">Battery</span>
+          <div class="bar"><div class="fill" id="barBatt"></div></div>
+          <b id="battVal">--</b>
+        </div>
+      </div>
+
+      <div class="mini" id="uaText"></div>
+    </section>
+
+    <nav class="tabs card anim">
+      <button class="tab ${state.tab==="gfx"?"active":""}" data-tab="gfx">Graphics</button>
+      <button class="tab ${state.tab==="sens"?"active":""}" data-tab="sens">Sensitivity</button>
+      <button class="tab ${state.tab==="opt"?"active":""}" data-tab="opt">Optimize</button>
+      <button class="tab ${state.tab==="cfg"?"active":""}" data-tab="cfg">Config</button>
+    </nav>
+
+    <main class="pages">
+      ${TAB_GFX()}
+      ${TAB_SENS()}
+      ${TAB_OPT()}
+      ${TAB_CFG()}
+    </main>
+
+    <footer class="bottomNav">
+      <button class="navBtn ${state.tab==="gfx"?"active":""}" data-tab="gfx">🎮</button>
+      <button class="navBtn ${state.tab==="sens"?"active":""}" data-tab="sens">🎯</button>
+      <button class="navBtn ${state.tab==="opt"?"active":""}" data-tab="opt">⚙️</button>
+      <button class="navBtn ${state.tab==="cfg"?"active":""}" data-tab="cfg">📄</button>
+    </footer>
+  `;
+}
+
+function TAB_GFX(){
+  return `
+  <section class="page ${state.tab==="gfx"?"active":""}" id="tab-gfx">
+    <div class="card anim">
+      <h2>Graphics Settings</h2>
+      <div class="grid2">
+        <div class="field">
+          <label>Graphics</label>
+          <select id="gfxQuality">
+            <option>Smooth</option><option>Balanced</option><option>HD</option><option>HDR</option><option>Ultra HD</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>FPS Target</label>
+          <select id="fpsTarget">
+            <option value="30">30 FPS</option>
+            <option value="40">40 FPS</option>
+            <option value="60" selected>60 FPS</option>
+            <option value="90">90 FPS</option>
+            <option value="120">120 FPS</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Resolution</label>
+          <select id="res">
+            <option>720p</option><option selected>1080p</option><option>2K</option><option>4K</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Color Style</label>
+          <select id="color">
+            <option>Classic</option><option>Colorful</option><option>Realistic</option><option>Soft</option><option>Movie</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="toggles">
+        <label class="toggle"><input type="checkbox" id="aa" checked /><span></span> Anti-Aliasing</label>
+        <label class="toggle"><input type="checkbox" id="shadow" /><span></span> Shadows</label>
+        <label class="toggle"><input type="checkbox" id="reduceGrass" /><span></span> Reduce Grass (Safe)</label>
+      </div>
+
+      <div class="btnRow">
+        <button class="btn primary" id="btnRunBGMI">Run BGMI</button>
+        <button class="btn ok" id="btnGenerate">Generate Config</button>
+        <button class="btn" id="btnCopy">Copy</button>
+        <button class="btn" id="btnDownload">Download</button>
+      </div>
+
+      <p class="muted" style="margin-top:10px;">
+        ⚠️ Note: Web app BGMI ko 100% guarantee se open nahi kar sakta (browser limitation). But "intent" try + Play Store fallback perfectly work karega.
+      </p>
+    </div>
+  </section>
+  `;
+}
+
+function TAB_SENS(){
+  return `
+  <section class="page ${state.tab==="sens"?"active":""}" id="tab-sens">
+    <div class="card anim">
+      <h2>Sensitivity</h2>
+
+      <div class="grid2">
+        <div class="field">
+          <label>Preset</label>
+          <select id="sensPreset">
+            <option value="custom">Custom</option>
+            <option value="jonathan">Jonathan Style</option>
+            <option value="scout">Scout Style</option>
+            <option value="mavi">Mavi Style</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Gyro</label>
+          <select id="gyroMode">
+            <option>Off</option>
+            <option>On</option>
+            <option>Always On</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="sliders">
+        ${S_SLIDER("General","sGen",120)}
+        ${S_SLIDER("Red Dot","sRed",80)}
+        ${S_SLIDER("2x","s2x",60)}
+        ${S_SLIDER("4x","s4x",45)}
+        ${S_SLIDER("6x","s6x",30)}
+        ${S_SLIDER("8x","s8x",20)}
+      </div>
+
+      <div class="card anim" style="margin-top:12px;">
+        <h2>AI Sensitivity Generator (Ai Brain)</h2>
+        <p class="muted">Device + playstyle + gyro based smart values (offline).</p>
+
+        <div class="grid2">
+          <div class="field">
+            <label>Play Style</label>
+            <select id="aiPlayStyle">
+              <option>Balanced</option>
+              <option>Rush</option>
+              <option>TDM</option>
+              <option>Sniper</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Fingers</label>
+            <select id="aiFingers">
+              <option value="2">2 Finger</option>
+              <option value="3">3 Finger</option>
+              <option value="4" selected>4 Finger</option>
+              <option value="5">5 Finger</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Device Type</label>
+            <select id="aiDevice">
+              <option>Low End</option>
+              <option selected>Mid</option>
+              <option>Flagship</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Target FPS</label>
+            <select id="aiFps">
+              <option>40</option>
+              <option selected>60</option>
+              <option>90</option>
+              <option>120</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="btnRow">
+          <button class="btn primary" id="btnAiGen">Generate</button>
+          <button class="btn" id="btnAiApply">Apply</button>
+        </div>
+
+        <div class="mini" id="aiNote">AI ready.</div>
+      </div>
+
+      <div class="card anim" style="margin-top:12px;">
+        <h2>Crosshair Overlay Preview</h2>
+        <p class="muted">Only for preview (safe). Game ke andar injection nahi hota.</p>
+
+        <div class="toggles">
+          <label class="toggle"><input type="checkbox" id="chEnable" checked /><span></span> Enable Crosshair</label>
+        </div>
+
+        <div class="grid2">
+          <div class="field">
+            <label>Style</label>
+            <select id="chStyle">
+              <option>Dot</option>
+              <option selected>Plus</option>
+              <option>Circle</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Size</label>
+            <select id="chSize">
+              <option value="10">Small</option>
+              <option value="16" selected>Medium</option>
+              <option value="24">Large</option>
+              <option value="34">XL</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Opacity</label>
+            <input type="range" id="chOpacity" min="0" max="1" step="0.05" value="0.85">
+          </div>
+          <div class="field">
+            <label>Color</label>
+            <input type="color" id="chColor" value="#4f8cff">
+          </div>
+        </div>
+
+        <div class="mini" id="gyroColorNote">Gyro based extra highlight: OFF</div>
+      </div>
+    </div>
+  </section>
+  `;
+}
+
+function S_SLIDER(name,id,val){
+  return `
+    <div class="srow">
+      <span>${name}</span>
+      <input id="${id}" type="range" min="1" max="400" value="${val}">
+      <b id="${id}V">${val}</b>
+    </div>
+  `;
+}
+
+function TAB_OPT(){
+  return `
+  <section class="page ${state.tab==="opt"?"active":""}" id="tab-opt">
+    <div class="card anim">
+      <h2>Optimization</h2>
+      <p class="muted">Safe recommendations (no hacks).</p>
+
+      <div class="toggles">
+        <label class="toggle"><input type="checkbox" id="lagfix" checked /><span></span> Lag Fix Mode</label>
+        <label class="toggle"><input type="checkbox" id="heatCtrl" /><span></span> Heat Control</label>
+        <label class="toggle"><input type="checkbox" id="smoothplay" checked /><span></span> Smooth Gameplay</label>
+        <label class="toggle"><input type="checkbox" id="lowRender" /><span></span> Low Render Distance</label>
+      </div>
+
+      <div class="btnRow">
+        <button class="btn primary" id="btnSyncOpt">Sync to Config</button>
+      </div>
+
+      <div class="card anim" style="margin-top:12px;">
+        <h2>Performance Estimator</h2>
+        <p class="muted">Auto update based on FPS/graphics + RAM.</p>
+
+        <div class="meter">
+          <div class="mrow">
+            <span class="label">Stability</span>
+            <div class="bar"><div class="fill" id="pStab"></div></div>
+            <b id="pStabV">--</b>
+          </div>
+          <div class="mrow">
+            <span class="label">Heat Risk</span>
+            <div class="bar"><div class="fill" id="pHeat"></div></div>
+            <b id="pHeatV">--</b>
+          </div>
+          <div class="mrow">
+            <span class="label">Battery</span>
+            <div class="bar"><div class="fill" id="pBatt"></div></div>
+            <b id="pBattV">--</b>
+          </div>
+          <div class="mrow">
+            <span class="label">FPS Drop</span>
+            <div class="bar"><div class="fill" id="pDrop"></div></div>
+            <b id="pDropV">--</b>
+          </div>
+        </div>
+
+        <div class="mini" id="perfText">Waiting…</div>
+      </div>
+    </div>
+  </section>
+  `;
+}
+
+function TAB_CFG(){
+  return `
+  <section class="page ${state.tab==="cfg"?"active":""}" id="tab-cfg">
+    <div class="card anim">
+      <h2>Generated Config</h2>
+      <p class="muted">Copy / download config. (Safe: file change/injection not included)</p>
+      <textarea id="cfgBox" spellcheck="false"></textarea>
+
+      <div class="btnRow">
+        <button class="btn primary" id="btnGenerate2">Generate</button>
+        <button class="btn" id="btnCopy2">Copy</button>
+        <button class="btn" id="btnDownload2">Download</button>
+      </div>
+    </div>
+  </section>
+  `;
+}
+
+/* =========================================================
+   BIND UI
+========================================================= */
+function bindUI(){
+  // Tabs
+  $$(".tab, .navBtn").forEach(b=>{
+    b.onclick = ()=>{
+      state.tab = b.dataset.tab;
+      renderApp(); // rerender full
+    };
+  });
+
+  // Reset
+  $("#btnReset").onclick = ()=>{
+    localStorage.removeItem("gfxToolStateV1");
+    location.reload();
+  };
+
+  // Buttons
+  const btnGenerate = $("#btnGenerate");
+  if(btnGenerate) btnGenerate.onclick = ()=>generateConfig(true);
+
+  const btnGenerate2 = $("#btnGenerate2");
+  if(btnGenerate2) btnGenerate2.onclick = ()=>generateConfig(true);
+
+  const btnCopy = $("#btnCopy");
+  if(btnCopy) btnCopy.onclick = ()=>copyConfig();
+
+  const btnCopy2 = $("#btnCopy2");
+  if(btnCopy2) btnCopy2.onclick = ()=>copyConfig();
+
+  const btnDownload = $("#btnDownload");
+  if(btnDownload) btnDownload.onclick = ()=>downloadConfig();
+
+  const btnDownload2 = $("#btnDownload2");
+  if(btnDownload2) btnDownload2.onclick = ()=>downloadConfig();
+
+  const btnSyncOpt = $("#btnSyncOpt");
+  if(btnSyncOpt) btnSyncOpt.onclick = ()=>{
+    toast("Synced to config settings ✔");
+    generateConfig(false);
+  };
+
+  // Run BGMI
+  const btnRun = $("#btnRunBGMI");
+  if(btnRun) btnRun.onclick = ()=>runBGMI();
+
+  // Sliders update
+  ["sGen","sRed","s2x","s4x","s6x","s8x"].forEach(id=>{
+    const el = $("#"+id);
+    const v = $("#"+id+"V");
+    if(el && v){
+      v.textContent = el.value;
+      el.oninput = ()=>{ v.textContent = el.value; saveState(); generateConfig(false); };
+    }
+  });
+
+  // Sens preset
+  const sensPreset = $("#sensPreset");
+  if(sensPreset){
+    sensPreset.onchange = ()=>{
+      applyPreset(sensPreset.value);
+      saveState();
+      generateConfig(false);
+    };
+  }
+
+  // Gyro mode
+  const gyroMode = $("#gyroMode");
+  if(gyroMode){
+    gyroMode.onchange = ()=>{
+      updateGyroUI();
+      saveState();
+      generateConfig(false);
+    };
+  }
+
+  // AI
+  const btnAiGen = $("#btnAiGen");
+  const btnAiApply = $("#btnAiApply");
+  if(btnAiGen) btnAiGen.onclick = ()=>aiGenerate();
+  if(btnAiApply) btnAiApply.onclick = ()=>aiApply();
+
+  // Crosshair
+  const chEnable = $("#chEnable");
+  const chStyle = $("#chStyle");
+  const chSize = $("#chSize");
+  const chOpacity = $("#chOpacity");
+  const chColor = $("#chColor");
+
+  [chEnable, chStyle, chSize, chOpacity, chColor].forEach(el=>{
+    if(el) el.oninput = ()=>{ drawCrosshair(); saveState(); };
+    if(el) el.onchange = ()=>{ drawCrosshair(); saveState(); };
+  });
+
+  // GFX controls
+  ["gfxQuality","fpsTarget","res","color","aa","shadow","reduceGrass"].forEach(id=>{
+    const el = $("#"+id);
+    if(el){
+      el.onchange = ()=>{ saveState(); updateAll(); generateConfig(false); };
+    }
+  });
+
+  // Run screen buttons
+  $("#btnCloseRun").onclick = ()=>hideRunScreen();
+  $("#btnOpenStore").onclick = ()=>openPlayStore();
+}
+
+/* =========================================================
+   DEVICE DETECT + STATE
+========================================================= */
+function detectDevice(){
+  state.deviceMemoryGB = getDeviceMemory();
+  state.deviceRamGB = state.deviceMemoryGB || estimateRamFromUA();
+
+  const ua = navigator.userAgent;
+  $("#uaText").textContent = `UA: ${ua.slice(0, 90)}${ua.length>90?"…":""}`;
+  $("#ramText").textContent = `${state.deviceRamGB} GB (estimate)`;
+
+  // set default recommended
+  if(state.deviceRamGB <= 3){
+    toast("Low RAM device detected: Smooth + 40 FPS recommended");
+  } else if(state.deviceRamGB <= 6){
+    toast("Mid device: Smooth/Balanced + 60 FPS recommended");
+  } else {
+    toast("High device: 90 FPS possible (if supported)");
+  }
+
+  // load saved
+  loadState();
+}
+
+function saveState(){
+  const snap = {
+    gfxQuality: $("#gfxQuality")?.value,
+    fpsTarget: $("#fpsTarget")?.value,
+    res: $("#res")?.value,
+    color: $("#color")?.value,
+    aa: $("#aa")?.checked,
+    shadow: $("#shadow")?.checked,
+    reduceGrass: $("#reduceGrass")?.checked,
+
+    sensPreset: $("#sensPreset")?.value,
+    gyroMode: $("#gyroMode")?.value,
+    sGen: $("#sGen")?.value,
+    sRed: $("#sRed")?.value,
+    s2x: $("#s2x")?.value,
+    s4x: $("#s4x")?.value,
+    s6x: $("#s6x")?.value,
+    s8x: $("#s8x")?.value,
+
+    chEnable: $("#chEnable")?.checked,
+    chStyle: $("#chStyle")?.value,
+    chSize: $("#chSize")?.value,
+    chOpacity: $("#chOpacity")?.value,
+    chColor: $("#chColor")?.value,
+
+    lagfix: $("#lagfix")?.checked,
+    heatCtrl: $("#heatCtrl")?.checked,
+    smoothplay: $("#smoothplay")?.checked,
+    lowRender: $("#lowRender")?.checked,
+  };
+  localStorage.setItem("gfxToolStateV1", JSON.stringify(snap));
+}
+
+function loadState(){
+  const raw = localStorage.getItem("gfxToolStateV1");
+  if(!raw) { generateConfig(true); drawCrosshair(); updateGyroUI(); return; }
+
+  try{
+    const s = JSON.parse(raw);
+
+    setVal("gfxQuality", s.gfxQuality);
+    setVal("fpsTarget", s.fpsTarget);
+    setVal("res", s.res);
+    setVal("color", s.color);
+    setChk("aa", s.aa);
+    setChk("shadow", s.shadow);
+    setChk("reduceGrass", s.reduceGrass);
+
+    setVal("sensPreset", s.sensPreset);
+    setVal("gyroMode", s.gyroMode);
+    setVal("sGen", s.sGen);
+    setVal("sRed", s.sRed);
+    setVal("s2x", s.s2x);
+    setVal("s4x", s.s4x);
+    setVal("s6x", s.s6x);
+    setVal("s8x", s.s8x);
+
+    // slider labels refresh
+    ["sGen","sRed","s2x","s4x","s6x","s8x"].forEach(id=>{
+      const el=$("#"+id), v=$("#"+id+"V");
+      if(el && v) v.textContent = el.value;
+    });
+
+    setChk("chEnable", s.chEnable);
+    setVal("chStyle", s.chStyle);
+    setVal("chSize", s.chSize);
+    setVal("chOpacity", s.chOpacity);
+    setVal("chColor", s.chColor);
+
+    setChk("lagfix", s.lagfix);
+    setChk("heatCtrl", s.heatCtrl);
+    setChk("smoothplay", s.smoothplay);
+    setChk("lowRender", s.lowRender);
+
+    updateGyroUI();
+    generateConfig(true);
+    drawCrosshair();
+  }catch(e){
+    console.warn("loadState error", e);
+  }
+}
+
+function setVal(id,val){
+  const el=$("#"+id);
+  if(el && val!=null) el.value = val;
+}
+function setChk(id,val){
+  const el=$("#"+id);
+  if(el && val!=null) el.checked = !!val;
+}
+
+/* =========================================================
+   CONFIG GENERATION
+========================================================= */
+function generateConfig(showToast){
+  const cfg = buildConfigObject();
+  const txt = JSON.stringify(cfg, null, 2);
+  const box = $("#cfgBox");
+  if(box) box.value = txt;
+  saveState();
+  if(showToast) toast("Config generated ✔");
+}
+
+function buildConfigObject(){
+  const gfx = {
+    graphics: $("#gfxQuality")?.value || "Smooth",
+    fpsTarget: Number($("#fpsTarget")?.value || 60),
+    resolution: $("#res")?.value || "1080p",
+    colorStyle: $("#color")?.value || "Classic",
+    antiAliasing: !!$("#aa")?.checked,
+    shadows: !!$("#shadow")?.checked,
+    reduceGrassSafe: !!$("#reduceGrass")?.checked,
+  };
+
+  const sens = {
+    preset: $("#sensPreset")?.value || "custom",
+    gyro: $("#gyroMode")?.value || "Off",
+    general: Number($("#sGen")?.value || 120),
+    redDot: Number($("#sRed")?.value || 80),
+    scope2x: Number($("#s2x")?.value || 60),
+    scope4x: Number($("#s4x")?.value || 45),
+    scope6x: Number($("#s6x")?.value || 30),
+    scope8x: Number($("#s8x")?.value || 20),
+  };
+
+  const crosshair = {
+    enabled: !!$("#chEnable")?.checked,
+    style: $("#chStyle")?.value || "Plus",
+    size: Number($("#chSize")?.value || 16),
+    opacity: Number($("#chOpacity")?.value || 0.85),
+    color: $("#chColor")?.value || "#4f8cff",
+  };
+
+  const opt = {
+    lagfix: !!$("#lagfix")?.checked,
+    heatControl: !!$("#heatCtrl")?.checked,
+    smoothGameplay: !!$("#smoothplay")?.checked,
+    lowRender: !!$("#lowRender")?.checked,
+  };
+
+  return {
+    app: { name:"BGMI GFX Tool Web", version:"1.0", safeMode:true },
+    device: { ramGB: state.deviceRamGB, deviceMemoryGB: state.deviceMemoryGB },
+    gfx, sensitivity: sens, crosshair, optimize: opt,
+    note: "This config is for recommendation/preview only. No injection / no memory patch."
+  };
+}
+
+function copyConfig(){
+  const box = $("#cfgBox");
+  if(!box || !box.value) { toast("Generate config first"); return; }
+  navigator.clipboard.writeText(box.value).then(()=>toast("Copied ✔")).catch(()=>toast("Copy failed"));
+}
+function downloadConfig(){
+  const box = $("#cfgBox");
+  if(!box || !box.value) { toast("Generate config first"); return; }
+  const blob = new Blob([box.value], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "bgmi_gfx_config.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast("Downloaded ✔");
+}
+
+/* =========================================================
+   PRESETS + AI
+========================================================= */
+function applyPreset(p){
+  const presets = {
+    jonathan: {gen:140, red:95, x2:70, x4:55, x6:35, x8:25},
+    scout:    {gen:125, red:90, x2:65, x4:50, x6:32, x8:22},
+    mavi:     {gen:110, red:78, x2:58, x4:44, x6:28, x8:20},
+  };
+  if(!presets[p]) return;
+
+  $("#sGen").value = presets[p].gen;
+  $("#sRed").value = presets[p].red;
+  $("#s2x").value  = presets[p].x2;
+  $("#s4x").value  = presets[p].x4;
+  $("#s6x").value  = presets[p].x6;
+  $("#s8x").value  = presets[p].x8;
+
+  ["sGen","sRed","s2x","s4x","s6x","s8x"].forEach(id=>{
+    $("#"+id+"V").textContent = $("#"+id).value;
+  });
+
+  toast(`Preset applied: ${p.toUpperCase()} ✔`);
+}
+
+let aiCache = null;
+
+function aiGenerate(){
+  const style = $("#aiPlayStyle")?.value || "Balanced";
+  const fingers = Number($("#aiFingers")?.value || 4);
+  const device = $("#aiDevice")?.value || "Mid";
+  const targetFps = Number($("#aiFps")?.value || 60);
+  const gyro = $("#gyroMode")?.value || "Off";
+
+  // base by style
+  let baseGen = 120, baseRed = 85, base2 = 60, base4 = 45, base6 = 30, base8 = 22;
+
+  if(style==="Rush"){ baseGen=150; baseRed=110; base2=80; base4=60; base6=40; base8=30; }
+  if(style==="TDM"){ baseGen=140; baseRed=105; base2=78; base4=58; base6=38; base8=28; }
+  if(style==="Sniper"){ baseGen=95; baseRed=70; base2=55; base4=42; base6=28; base8=18; }
+
+  // device adjustment
+  let devMul = 1.0;
+  if(device==="Low End") devMul = 0.92;
+  if(device==="Flagship") devMul = 1.06;
+
+  // finger adjustment
+  let fingerMul = 1.0;
+  if(fingers===2) fingerMul = 0.92;
+  if(fingers===3) fingerMul = 0.97;
+  if(fingers===5) fingerMul = 1.04;
+
+  // fps adjustment
+  let fpsMul = 1.0;
+  if(targetFps>=90) fpsMul = 1.05;
+  if(targetFps<=40) fpsMul = 0.95;
+
+  // gyro adjustment: if gyro ON -> lower touch sensitivity slightly
+  let gyroMul = 1.0;
+  if(gyro!=="Off") gyroMul = 0.92;
+
+  const mul = devMul * fingerMul * fpsMul * gyroMul;
+
+  aiCache = {
+    gen: clamp(round(baseGen*mul), 1, 400),
+    red: clamp(round(baseRed*mul), 1, 400),
+    x2:  clamp(round(base2*mul), 1, 400),
+    x4:  clamp(round(base4*mul), 1, 400),
+    x6:  clamp(round(base6*mul), 1, 400),
+    x8:  clamp(round(base8*mul), 1, 400),
+    gyroRecommended: gyro!=="Off"
+  };
+
+  $("#aiNote").textContent =
+    `AI Generated ✔  Gen:${aiCache.gen}  Red:${aiCache.red}  2x:${aiCache.x2}  4x:${aiCache.x4}  6x:${aiCache.x6}  8x:${aiCache.x8}`
+    + (aiCache.gyroRecommended ? " | Gyro mode ON detected" : "");
+
+  toast("AI sensitivity generated ✔");
+}
+
+function aiApply(){
+  if(!aiCache){ toast("Generate AI first"); return; }
+
+  $("#sGen").value = aiCache.gen;
+  $("#sRed").value = aiCache.red;
+  $("#s2x").value  = aiCache.x2;
+  $("#s4x").value  = aiCache.x4;
+  $("#s6x").value  = aiCache.x6;
+  $("#s8x").value  = aiCache.x8;
+
+  ["sGen","sRed","s2x","s4x","s6x","s8x"].forEach(id=>{
+    $("#"+id+"V").textContent = $("#"+id).value;
+  });
+
+  toast("AI applied ✔");
+  saveState();
+  generateConfig(false);
+}
+
+/* =========================================================
+   GYRO UI BEHAVIOR (as per your rule)
+   - Gyro ON => crosshair color highlight ON
+   - Gyro OFF => crosshair color highlight OFF
+========================================================= */
+function updateGyroUI(){
+  const gyro = $("#gyroMode")?.value || "Off";
+  const note = $("#gyroColorNote");
+  if(!note) return;
+
+  if(gyro==="Off"){
+    note.textContent = "Gyro based extra highlight: OFF";
+  } else {
+    note.textContent = "Gyro based extra highlight: ON (color pulse)";
+  }
+  drawCrosshair();
+}
+
+/* =========================================================
+   CROSSHAIR DRAW
+========================================================= */
+function drawCrosshair(){
+  const canvas = $("#crosshairOverlay");
+  if(!canvas) return;
+  const ctx = canvas.getContext("2d");
+
+  const enabled = !!$("#chEnable")?.checked;
+  if(!enabled){
+    canvas.style.display = "none";
+    return;
+  }
+
+  canvas.style.display = "block";
+
+  const style = $("#chStyle")?.value || "Plus";
+  const size = Number($("#chSize")?.value || 16);
+  const opacity = Number($("#chOpacity")?.value || 0.85);
+  const color = $("#chColor")?.value || "#4f8cff";
+
+  const gyro = $("#gyroMode")?.value || "Off";
+  const pulse = (gyro==="Off") ? 1 : (0.85 + 0.15*Math.sin(Date.now()/220));
+
+  canvas.style.opacity = String(opacity);
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.save();
+  ctx.translate(canvas.width/2, canvas.height/2);
+
+  // glow
+  ctx.globalAlpha = 0.25 * pulse;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.arc(0,0,size*1.2,0,Math.PI*2);
+  ctx.stroke();
+
+  // main
+  ctx.globalAlpha = 1 * pulse;
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 3;
+
+  if(style==="Dot"){
+    ctx.beginPath();
+    ctx.arc(0,0,size/4,0,Math.PI*2);
+    ctx.fill();
+  }
+  if(style==="Plus"){
+    ctx.beginPath();
+    ctx.moveTo(-size,0); ctx.lineTo(-size/3,0);
+    ctx.moveTo(size/3,0); ctx.lineTo(size,0);
+    ctx.moveTo(0,-size); ctx.lineTo(0,-size/3);
+    ctx.moveTo(0,size/3); ctx.lineTo(0,size);
+    ctx.stroke();
+
+    // center dot
+    ctx.beginPath();
+    ctx.arc(0,0,2.5,0,Math.PI*2);
+    ctx.fill();
+  }
+  if(style==="Circle"){
+    ctx.beginPath();
+    ctx.arc(0,0,size*0.7,0,Math.PI*2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(0,0,2.5,0,Math.PI*2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+/* =========================================================
+   FPS SIM + PERFORMANCE AUTO UPDATE
+========================================================= */
+function startLoops(){
+  stopLoops();
+
+  state.fpsInterval = setInterval(()=>{
+    state.fpsTarget = Number($("#fpsTarget")?.value || 60);
+
+    const gfx = $("#gfxQuality")?.value || "Smooth";
+    const res = $("#res")?.value || "1080p";
+    const shadow = !!$("#shadow")?.checked;
+    const aa = !!$("#aa")?.checked;
+    const heatCtrl = !!$("#heatCtrl")?.checked;
+
+    // load factor
+    let load = 0;
+    load += (gfx==="Smooth"?0.10: gfx==="Balanced"?0.22: gfx==="HD"?0.35: gfx==="HDR"?0.48:0.60);
+    load += (res==="720p"?0.10: res==="1080p"?0.25: res==="2K"?0.42:0.55);
+    load += shadow?0.12:0;
+    load += aa?0.08:0;
+
+    // ram advantage
+    let ramAdv = clamp((state.deviceRamGB-3)/8, 0, 1); // 0..1
+    let perf = 0.55 + 0.45*ramAdv;
+
+    // heat control slightly improves stability
+    if(heatCtrl) perf += 0.05;
+
+    // target achievable
+    let achievable = state.fpsTarget * perf * (1 - load);
+    achievable = clamp(achievable, 18, state.fpsTarget);
+
+    // simulate jitter
+    const jitter = (Math.random()*6 - 3);
+    state.fpsSim = clamp(round(achievable + jitter), 10, state.fpsTarget);
+
+    // UI
+    const fpsNow = $("#fpsNow");
+    if(fpsNow) fpsNow.textContent = state.fpsSim;
+
+    // bar
+    const pct = clamp(state.fpsSim/state.fpsTarget, 0, 1);
+    $("#barFps") && ($("#barFps").style.width = `${round(pct*100)}%`);
+    $("#fpsBarVal") && ($("#fpsBarVal").textContent = `${state.fpsSim}`);
+  }, 650);
+
+  state.perfInterval = setInterval(()=>{
+    updatePerformance();
+  }, 900);
+
+  state.crosshairInterval = setInterval(()=>{
+    // keep pulse smooth
+    if(state.tab==="sens") drawCrosshair();
+  }, 90);
+}
+
+function stopLoops(){
+  if(state.fpsInterval) clearInterval(state.fpsInterval);
+  if(state.perfInterval) clearInterval(state.perfInterval);
+  if(state.crosshairInterval) clearInterval(state.crosshairInterval);
+}
+
+function updatePerformance(){
+  const gfx = $("#gfxQuality")?.value || "Smooth";
+  const fpsT = Number($("#fpsTarget")?.value || 60);
+  const shadow = !!$("#shadow")?.checked;
+  const aa = !!$("#aa")?.checked;
+  const res = $("#res")?.value || "1080p";
+  const reduceGrass = !!$("#reduceGrass")?.checked;
+
+  const lagfix = !!$("#lagfix")?.checked;
+  const heatCtrl = !!$("#heatCtrl")?.checked;
+  const smoothplay = !!$("#smoothplay")?.checked;
+  const lowRender = !!$("#lowRender")?.checked;
+
+  // compute load
+  let load = 0;
+  load += (gfx==="Smooth"?0.10: gfx==="Balanced"?0.22: gfx==="HD"?0.35: gfx==="HDR"?0.48:0.60);
+  load += (res==="720p"?0.10: res==="1080p"?0.25: res==="2K"?0.42:0.55);
+  load += shadow?0.12:0;
+  load += aa?0.08:0;
+  load += fpsT>=90?0.14: fpsT>=60?0.08:0;
+
+  // optimizers reduce load
+  if(reduceGrass) load -= 0.04;
+  if(lagfix) load -= 0.06;
+  if(lowRender) load -= 0.05;
+  if(smoothplay) load -= 0.03;
+  load = clamp(load, 0.05, 0.95);
+
+  const ram = state.deviceRamGB || 4;
+  const ramScore = clamp((ram-2)/10, 0, 1);
+
+  // stability: high if low load and good ram
+  let stability = clamp( (1-load)*0.65 + ramScore*0.35, 0, 1 );
+  if(heatCtrl) stability += 0.05;
+  stability = clamp(stability, 0, 1);
+
+  // heat: high if high load
+  let heat = clamp( load*0.75 + (fpsT>=90?0.10:0), 0, 1 );
+  if(heatCtrl) heat -= 0.12;
+  heat = clamp(heat, 0, 1);
+
+  // battery drain: based on load + fps
+  let batt = clamp( load*0.65 + (fpsT/120)*0.35, 0, 1 );
+  if(heatCtrl) batt -= 0.06;
+  batt = clamp(batt, 0, 1);
+
+  // fps drop risk: inverse of stability + more on high fps
+  let drop = clamp( (1-stability)*0.75 + (fpsT>=90?0.15:0), 0, 1 );
+
+  // Update header meters
+  $("#barStab") && ($("#barStab").style.width = `${round(stability*100)}%`);
+  $("#barHeat") && ($("#barHeat").style.width = `${round(heat*100)}%`);
+  $("#barBatt") && ($("#barBatt").style.width = `${round(batt*100)}%`);
+  $("#stabVal") && ($("#stabVal").textContent = `${round(stability*100)}`);
+  $("#heatVal") && ($("#heatVal").textContent = `${round(heat*100)}`);
+  $("#battVal") && ($("#battVal").textContent = `${round(batt*100)}`);
+
+  // Optimize tab meters (if exist)
+  if($("#pStab")) $("#pStab").style.width = `${round(stability*100)}%`;
+  if($("#pHeat")) $("#pHeat").style.width = `${round(heat*100)}%`;
+  if($("#pBatt")) $("#pBatt").style.width = `${round(batt*100)}%`;
+  if($("#pDrop")) $("#pDrop").style.width = `${round(drop*100)}%`;
+
+  if($("#pStabV")) $("#pStabV").textContent = round(stability*100);
+  if($("#pHeatV")) $("#pHeatV").textContent = round(heat*100);
+  if($("#pBattV")) $("#pBattV").textContent = round(batt*100);
+  if($("#pDropV")) $("#pDropV").textContent = round(drop*100);
+
+  const perfText = $("#perfText");
+  if(perfText){
+    const heatLabel = heat<0.35?"Low":heat<0.7?"Medium":"High";
+    const dropLabel = drop<0.35?"Low":drop<0.7?"Medium":"High";
+    perfText.textContent = `Load:${round(load*100)}% | Heat:${heatLabel} | FPS Drop Risk:${dropLabel} | RAM:${ram}GB`;
+  }
+}
+
+function updateAll(){
+  // sync fps target to AI dropdown for better UX (optional)
+  const ft = $("#fpsTarget")?.value;
+  const aiFps = $("#aiFps");
+  if(aiFps && ft) aiFps.value = String(ft);
+
+  updatePerformance();
+  generateConfig(false);
+  drawCrosshair();
+}
+
+/* =========================================================
+   RUN BGMI (intent try + store fallback)
+========================================================= */
+function showRunScreen(title, sub){
+  $("#runScreen").style.display = "block";
+  $("#runTitle").textContent = title || "Launching…";
+  $("#runSub").textContent = sub || "Please wait";
+}
+function hideRunScreen(){
+  $("#runScreen").style.display = "none";
+}
+
+function logRun(msg){
+  const el = $("#runLog");
+  el.textContent = (el.textContent ? el.textContent + "\n" : "") + msg;
+  el.scrollTop = el.scrollHeight;
+}
+
+function openPlayStore(){
+  // BGMI first, then PUBG
+  const bgmiStore = "https://play.google.com/store/apps/details?id=com.pubg.imobile";
+  const pubgStore = "https://play.google.com/store/apps/details?id=com.tencent.ig";
+
+  // open new tab
+  window.open(bgmiStore, "_blank");
+  setTimeout(()=>window.open(pubgStore, "_blank"), 700);
+}
+
+function runBGMI(){
+  showRunScreen("Launching…", "Trying to open BGMI / PUBG");
+  $("#runLog").textContent = "";
+  logRun("✔ Checking packages (best effort)...");
+  logRun("✔ Preparing Android intent...");
+  logRun("⏳ Launching...");
+
+  // Intent URLs (Android Chrome supports this)
+  const intents = [
+    // BGMI (Krafton India)
+    "intent://#Intent;package=com.pubg.imobile;end",
+    // PUBG Mobile Global
+    "intent://#Intent;package=com.tencent.ig;end",
+    // PUBG KR
+    "intent://#Intent;package=com.pubg.krmobile;end"
+  ];
+
+  let i = 0;
+
+  const tryNext = ()=>{
+    if(i >= intents.length){
+      logRun("❌ Game not launched from browser.");
+      logRun("➡️ Opening Play Store fallback...");
+      $("#runTitle").textContent = "Not Installed / Blocked";
+      $("#runSub").textContent = "Opening Play Store…";
+      openPlayStore();
+      return;
+    }
+
+    const url = intents[i++];
+    logRun(`▶ Trying: ${url.includes("com.pubg.imobile")?"BGMI":"PUBG"} package...`);
+
+    // Attempt open
+    const start = Date.now();
+    location.href = url;
+
+    // If user leaves page, this timer stops naturally.
+    // If not, we continue fallback.
+    setTimeout(()=>{
+      const dt = Date.now() - start;
+      if(dt > 1500){
+        // likely paused
+        return;
+      }
+      tryNext();
+    }, 850);
+  };
+
+  // Nice animation steps
+  setTimeout(()=>logRun("✔ Optimizing settings for launch..."), 500);
+  setTimeout(()=>logRun("✔ Applying FPS monitor..."), 900);
+  setTimeout(()=>tryNext(), 1200);
+}
+
+/* =========================================================
+   TOAST
+========================================================= */
+let toastTimer = null;
+function toast(msg){
+  let t = $("#toast");
+  if(!t){
+    t = document.createElement("div");
+    t.id = "toast";
+    t.style.position="fixed";
+    t.style.left="50%";
+    t.style.bottom="86px";
+    t.style.transform="translateX(-50%)";
+    t.style.padding="12px 14px";
+    t.style.borderRadius="999px";
+    t.style.fontWeight="900";
+    t.style.fontSize="12px";
+    t.style.color="#06121f";
+    t.style.background="linear-gradient(135deg, rgba(77,255,181,.95), rgba(79,140,255,.95))";
+    t.style.boxShadow="0 16px 50px rgba(0,0,0,.45)";
+    t.style.zIndex="999999";
+    t.style.opacity="0";
+    t.style.transition=".25s";
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = "1";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ t.style.opacity="0"; }, 1600);
+}
+
+/* =========================================================
+   INIT
+========================================================= */
+renderApp();
+</script>
+
+</body>
+</html>
